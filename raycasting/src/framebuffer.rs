@@ -36,4 +36,22 @@ impl Framebuffer {
     pub fn set_current_color(&mut self, color: u32) {
         self.current_color = color;
     }
+
+    /// Pinta una franja vertical solida con el color actual -- lo que
+    /// usa el render 3D para dibujar cada columna de pared de un tiro.
+    pub fn draw_vertical_line(&mut self, x: usize, y_start: usize, y_end: usize) {
+        for y in y_start..=y_end {
+            self.point(x, y);
+        }
+    }
+
+    /// Rectangulo solido con el color actual (usado por el piso/techo y
+    /// por las celdas del minimapa).
+    pub fn draw_rect(&mut self, x0: usize, y0: usize, w: usize, h: usize) {
+        for y in y0..y0 + h {
+            for x in x0..x0 + w {
+                self.point(x, y);
+            }
+        }
+    }
 }

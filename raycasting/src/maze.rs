@@ -39,9 +39,27 @@ pub fn load_maze(filename: &str, block_size: usize) -> (Maze, Player) {
 
     let player = Player {
         pos: player_pos.unwrap_or_else(|| Vec2::new(0.0, 0.0)),
-        // ángulo de vista inicial; el jugador podrá girarlo con el teclado.
+        // ángulo de vista inicial; el jugador podrá girarlo con el teclado/mouse.
         a: PI / 3.0,
     };
 
     (maze, player)
+}
+
+/// true si la celda en (row, col) es pared o esta fuera del laberinto.
+/// Usado tanto por el caster (para saber donde detener cada rayo) como
+/// por el jugador (para no atravesar paredes).
+pub fn is_wall(maze: &Maze, row: usize, col: usize) -> bool {
+    match maze.get(row).and_then(|r| r.get(col)) {
+        Some(&c) => c != ' ',
+        None => true, // fuera del laberinto cuenta como pared
+    }
+}
+
+pub fn width_in_cells(maze: &Maze) -> usize {
+    maze.iter().map(|r| r.len()).max().unwrap_or(0)
+}
+
+pub fn height_in_cells(maze: &Maze) -> usize {
+    maze.len()
 }
