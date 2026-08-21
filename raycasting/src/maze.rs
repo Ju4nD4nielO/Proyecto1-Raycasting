@@ -47,11 +47,9 @@ pub fn load_maze(filename: &str, block_size: usize) -> (Maze, Player) {
 }
 
 /// true si la celda en (row, col) es pared o esta fuera del laberinto.
-/// Usado tanto por el caster (para saber donde detener cada rayo) como
-/// por el jugador (para no atravesar paredes).
 pub fn is_wall(maze: &Maze, row: usize, col: usize) -> bool {
     match maze.get(row).and_then(|r| r.get(col)) {
-        Some(&c) => c != ' ',
+        Some(&c) => c != ' ' && c != 'g' && c != 'G',
         None => true, // fuera del laberinto cuenta como pared
     }
 }

@@ -15,7 +15,7 @@ use crate::audio::Audio;
 use crate::caster::cast_ray;
 use crate::framebuffer::Framebuffer;
 use crate::maze::{height_in_cells, load_maze, width_in_cells, Maze};
-use crate::player::{process_events, MouseState, Player};
+use crate::player::{process_events, Player};
 use crate::sprite::{render_sprites, Sprite};
 use crate::text::{draw_text, text_width};
 
@@ -26,6 +26,12 @@ const SCREEN_H: usize = 900;
 
 const CEILING_COLOR: u32 = 0x333355;
 const FLOOR_COLOR: u32 = 0x555544;
+
+/// (ruta del .txt, nombre a mostrar en pantalla)
+const LEVELS: [(&str, &str); 2] = [
+    ("./maze.txt", "NIVEL 1"),
+    ("./maze2.txt", "NIVEL 2"),
+];
 
 #[derive(PartialEq)]
 enum GameState {
@@ -148,16 +154,21 @@ fn find_cell_world_pos(maze: &Maze, target: char) -> Option<Vec2> {
     None
 }
 
-fn main() {
-    let (maze, mut player) = load_maze("./maze.txt", BLOCK_SIZE);
-
-    // La antorcha animada se coloca justo en la meta, a modo de baliza
-    // visual que ayuda a orientarse (ademas de cumplir el objetivo de
-    // sprite animado).
-    let mut sprites = match find_cell_world_pos(&maze, 'g') {
+/// Carga un nivel por indice (dentro de LEVELS) y coloca la antorcha
+/// animada en la meta de ese nivel.
+fn start_level(index: usize) -> (Maze, Player, Vec<Sprite>) {
+    let (path, _name) = LEVELS[index];
+    let (maze, player) = load_maze(path, BLOCK_SIZE);
+    let sprites = match find_cell_world_pos(&maze, 'g') {
         Some(pos) => vec![Sprite::new(pos)],
         None => vec![],
     };
+    (maze, player, sprites)
+}
+
+fn main() {
+    let mut current_level: usize = 0;
+    let (mut maze, mut player, mut sprites) = start_level(current_level);
 
     let mut framebuffer = Framebuffer::new(SCREEN_W, SCREEN_H);
     framebuffer.set_background_color(CEILING_COLOR);
@@ -169,7 +180,6 @@ fn main() {
     let mut audio = Audio::new();
     let mut music_started = false;
 
-    let mut mouse = MouseState::new();
     let mut last_frame = Instant::now();
     let mut fps: i32;
     let mut state = GameState::Welcome;
@@ -197,7 +207,7 @@ fn main() {
                     }
                 }
 
-                process_events(&window, &maze, BLOCK_SIZE, &mut player, &mut mouse);
+                process_events(&window, &maze, BLOCK_SIZE, &mut player);
 
                 let i = player.pos.x as usize / BLOCK_SIZE;
                 let j = player.pos.y as usize / BLOCK_SIZE;
@@ -216,10 +226,20 @@ fn main() {
             }
             GameState::Success => {
                 if window.is_key_pressed(Key::Enter, KeyRepeat::No) {
-                    // reinicia al spawn original del archivo
-                    let (_, fresh_player) = load_maze("./maze.txt", BLOCK_SIZE);
-                    player = fresh_player;
-                    state = GameState::Welcome;
+                    // repetir el mismo nivel desde su spawn original
+                    let (m, p, s) = start_level(current_level);
+                    maze = m;
+                    player = p;
+                    sprites = s;
+                    state = GameState::Playing;
+                } else if window.is_key_pressed(Key::N, KeyRepeat::No) {
+                    // pasar al siguiente nivel disponible (con wrap)
+                    current_level = (current_level + 1) % LEVELS.len();
+                    let (m, p, s) = start_level(current_level);
+                    maze = m;
+                    player = p;
+                    sprites = s;
+                    state = GameState::Playing;
                 }
             }
         }
@@ -232,6 +252,7 @@ fn main() {
                 draw_centered(&mut framebuffer, 340, "CS UVG - GRAFICAS POR COMPUTADORA", 0xCCCCCC, 1);
                 draw_centered(&mut framebuffer, 460, "PRESIONA ENTER PARA JUGAR", 0xFFFFFF, 2);
                 draw_centered(&mut framebuffer, 520, "WASD MOVER - MOUSE/FLECHAS ROTAR - ESC SALIR", 0x999999, 1);
+                draw_centered(&mut framebuffer, 560, &format!("CARGANDO: {}", LEVELS[current_level].1), 0x777777, 1);
             }
             GameState::Playing => {
                 for s in sprites.iter_mut() {
@@ -242,10 +263,14 @@ fn main() {
                 render_minimap(&mut framebuffer, &maze, &player);
 
                 draw_text(&mut framebuffer, 10, 10, &format!("FPS:{}", fps), 0x00FF00, 2);
+                draw_text(&mut framebuffer, 10, 34, LEVELS[current_level].1, 0xFFFFFF, 1);
             }
             GameState::Success => {
-                draw_centered(&mut framebuffer, 300, "NIVEL COMPLETADO", 0x00FF00, 4);
-                draw_centered(&mut framebuffer, 420, "PRESIONA ENTER PARA VOLVER AL MENU", 0xFFFFFF, 2);
+                draw_centered(&mut framebuffer, 260, "FELICIDADES!", 0x00FF00, 5);
+                draw_centered(&mut framebuffer, 350, "NIVEL COMPLETADO", 0xFFFFFF, 3);
+                draw_centered(&mut framebuffer, 440, "ENTER: JUGAR DE NUEVO ESTE NIVEL", 0xFFFFFF, 2);
+                draw_centered(&mut framebuffer, 480, "N: PROBAR EL OTRO NIVEL", 0xFFFFFF, 2);
+                draw_centered(&mut framebuffer, 520, "ESC: SALIR", 0x999999, 2);
             }
         }
 
