@@ -3,8 +3,7 @@ use std::fs::File;
 use std::io::BufReader;
 
 /// Envoltorio sobre rodio para musica de fondo (en loop) y efectos de
-/// sonido puntuales. Si no hay dispositivo de audio disponible, o el
-/// archivo no existe, simplemente no suena nada -- nunca hace panic.
+/// sonido puntuales. 
 
 pub struct Audio {
     // Debe vivir mientras el programa reproduzca algo: si se dropea,
@@ -18,8 +17,7 @@ impl Audio {
         Some(Audio { _device: device, music_player: None })
     }
 
-    /// Arranca musica de fondo en loop infinito. Para cambiar de
-    /// cancion, primero llama stop_music().
+    /// Arranca musica de fondo en loop infinito. 
     pub fn play_music(&mut self, path: &str) {
         if !std::path::Path::new(path).exists() {
             return;

@@ -24,8 +24,7 @@ impl Sprite {
         FLAME_PALETTE[frame]
     }
 
-    /// Factor de escala que hace que la antorcha "respire" (crezca y
-    /// encoja) en vez de quedarse estatica.
+    /// Factor de escala que hace que la antorcha "respire"
     fn pulse(&self) -> f32 {
         1.0 + 0.15 * (self.time * 5.0).sin()
     }
@@ -44,8 +43,7 @@ pub fn render_sprites(
         let dy = sprite.pos.y - player.pos.y;
         let dist = (dx * dx + dy * dy).sqrt().max(1.0);
 
-        // Angulo del sprite relativo a hacia donde mira el jugador,
-        // normalizado a [-PI, PI] para saber si esta dentro del FOV.
+        
         let angle_to_sprite = dy.atan2(dx);
         let mut relative = angle_to_sprite - player.a;
         while relative > std::f32::consts::PI {

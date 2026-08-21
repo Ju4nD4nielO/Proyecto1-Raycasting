@@ -50,8 +50,7 @@ fn glyph(c: char) -> [u8; 7] {
 }
 
 /// Dibuja `text` empezando en (x, y), con cada pixel del glifo escalado
-/// `scale` veces. `scale = 3` da letras de 15x21 px, buen tamano para
-/// titulos; `scale = 2` es comodo para texto normal en pantalla.
+/// `scale` veces. 
 pub fn draw_text(fb: &mut Framebuffer, x: usize, y: usize, text: &str, color: u32, scale: usize) {
     fb.set_current_color(color);
     let advance = (5 + 1) * scale; // 5 columnas + 1 de espacio entre letras

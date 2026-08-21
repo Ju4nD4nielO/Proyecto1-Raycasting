@@ -12,24 +12,22 @@ pub struct Player {
 pub fn process_events(window: &Window, maze: &Maze, block_size: usize, player: &mut Player) {
     const MOVE_SPEED: f32 = 6.0;
     const ROTATION_SPEED: f32 = PI / 30.0;
-    // "grosor" del jugador en pixeles-mundo, para no pegarse a la pared
-    // ni poder atravesarla por una esquina.
     const RADIUS: f32 = 15.0;
 
-    if window.is_key_down(Key::A) || window.is_key_down(Key::Left) {
+    if window.is_key_down(Key::J) || window.is_key_down(Key::Left) {
         player.a -= ROTATION_SPEED;
     }
-    if window.is_key_down(Key::D) || window.is_key_down(Key::Right) {
+    if window.is_key_down(Key::L) || window.is_key_down(Key::Right) {
         player.a += ROTATION_SPEED;
     }
 
     apply_mouse_look(window, player);
 
     let mut move_step = 0.0;
-    if window.is_key_down(Key::W) || window.is_key_down(Key::Up) {
+    if window.is_key_down(Key::I) || window.is_key_down(Key::Up) {
         move_step += MOVE_SPEED;
     }
-    if window.is_key_down(Key::S) || window.is_key_down(Key::Down) {
+    if window.is_key_down(Key::K) || window.is_key_down(Key::Down) {
         move_step -= MOVE_SPEED;
     }
 
